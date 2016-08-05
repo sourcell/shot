@@ -17,12 +17,6 @@ var D = 68;
 var Game = {
 	FPS: 60,
 
-	frameSetup: function(){
-		if(window.innerWidth < 1000){
-			Game.FPS = 30;
-		}
-	},
-
 	clear: function(){
 		ctx.clearRect(0, 0, map.width, map.height);
 	}
@@ -258,7 +252,6 @@ window.onresize = canvasSetup;
 */
 
 canvasSetup();
-Game.frameSetup();
 
 function canvasSetup(){
 	canvas.width = window.innerWidth;
@@ -280,6 +273,15 @@ function isHit(a, b){
 		return false;
 	}
 }
+
+
+
+
+/*
+==============================
+		INTERVAL
+==============================
+*/
 
 setInterval(function(){
 	Game.clear();
