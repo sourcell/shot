@@ -260,7 +260,7 @@ function canvasSetup(){
 }
 
 function phoneOptimize(){
-	if(window.innerHeight < 1000){
+	if(window.innerWidth < 1000){
 		player.size = 30;
 		playeer.ammo.size = 20;
 		food.size = 40;
