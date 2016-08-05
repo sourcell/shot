@@ -260,12 +260,14 @@ function canvasSetup(){
 }
 
 function phoneOptimize(){
-	player.size = 30;
-	playeer.ammo.size = 20;
-	food.size = 40;
-	trap01.size = 40;
-	trap02.size = 40;
-	trap03.size = 40;
+	if(window.innerHeight < 1000){
+		player.size = 30;
+		playeer.ammo.size = 20;
+		food.size = 40;
+		trap01.size = 40;
+		trap02.size = 40;
+		trap03.size = 40;
+	}
 }
 
 function random(min, max){
