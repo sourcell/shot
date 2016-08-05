@@ -3,7 +3,6 @@
 		VARIABLES
 ==============================
 */
-
 var canvas = document.getElementById("map");
 var ctx = canvas.getContext("2d");
 
@@ -41,7 +40,7 @@ var player = {
 		x: 20,
 		y: map.height - 30,
 		size: 10,
-		speed: 20,
+		speed: 4,
 
 		draw: function(){
 			ctx.fillStyle = Color.blue;
@@ -227,7 +226,6 @@ var trap03 = {
 		EVENTS
 ==============================
 */
-
 window.addEventListener("keydown", function(e){
 	key[e.keyCode] = true;
 });
@@ -250,7 +248,6 @@ window.onresize = canvasSetup;
 		FUNCTIONS
 ==============================
 */
-
 canvasSetup();
 phoneOptimize();
 
@@ -294,7 +291,6 @@ function isHit(a, b){
 		INTERVAL
 ==============================
 */
-
 setInterval(function(){
 	Game.clear();
 	food.draw();
