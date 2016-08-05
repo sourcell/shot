@@ -15,7 +15,7 @@ var S = 83;
 var D = 68;
 
 var Game = {
-	FPS: 60,
+	FPS: 150,
 
 	clear: function(){
 		ctx.clearRect(0, 0, map.width, map.height);
@@ -33,7 +33,7 @@ var player = {
 	x: 20,
 	y: map.height - 30,
 	size: 15,
-	speed: 5,
+	speed: 1,
 	shotted: false,
 	points: 0,
 
@@ -119,7 +119,7 @@ var player = {
 
 	drawPoints: function(){
 		ctx.fillStyle = "white";
-		ctx.font = "20px Trebuchet MS"
+		ctx.font = "40px Trebuchet MS"
 		ctx.fillText("Points: " + this.points, 50, 50);
 	}
 }
@@ -150,7 +150,7 @@ var Color = {
 var trap01 = {
 	x: random(20, map.width - 20),
 	y: random(20, player.y - 100),
-	speed: 5,
+	speed: 1,
 	color: Color.red,
 	size: 20,
 
@@ -174,7 +174,7 @@ var trap01 = {
 var trap02 = {
 	x: random(20, map.width - 20),
 	y: random(20, player.y - 100),
-	speed: 5,
+	speed: 1,
 	color: Color.purple,
 	size: 20,
 
@@ -198,7 +198,7 @@ var trap02 = {
 var trap03 = {
 	x: random(20, map.width - 20),
 	y: random(20, player.y - 100),
-	speed: 5,
+	speed: 1,
 	color: Color.pink,
 	size: 20,
 
