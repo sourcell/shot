@@ -1,11 +1,19 @@
 /*
 ==============================
-		VARIABLES
+		CANVAS SETUP
 ==============================
 */
 var canvas = document.getElementById("map");
 var ctx = canvas.getContext("2d");
+canvasSetup();
 
+
+
+/*
+==============================
+	OBJECTS & VARIABLES
+==============================
+*/
 var key = [];
 var SPACEBAR = 32;
 var W = 87;
@@ -14,11 +22,38 @@ var S = 83;
 var D = 68;
 
 var Game = {
-	FPS: 150,
+	FPS: 60,
+	keyPressed: false,
 
 	clear: function(){
-		ctx.clearRect(0, 0, map.width, map.height);
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+	},
+
+	restart: function(){
+		generateBlocks();
+		player.score = 0;
+		player.killed = 0;
+		player.ammo.reset();
+		player.colorChange();
+	},
+
+	reset: function(){
+		generateBlocks();
+		player.score = 0;
+		player.ammo.reset();
+		player.colorChange();	
 	}
+}
+
+var Color = {
+	red: "#E74C3C",
+	green: "#2ECC71",
+	blue: "#3498DB",
+	purple: "#9B59B6",
+	pink: "#F0A",
+	yellow: "#F1C40F",
+	orange: "#E67E22",
+	wet: "#34495E"
 }
 
 var map = {
@@ -28,23 +63,29 @@ var map = {
 	height: window.innerHeight
 }
 
+var blocks = [];
+generateBlocks();
+
 var player = {
 	x: 20,
-	y: map.height - 30,
+	y: canvas.height - 30,
 	size: 15,
-	speed: 1,
+	speed: 5,
 	shotted: false,
-	points: 0,
+	killed: 0,
+	score: 0,
+	color: Color.blue,
 
 	ammo: {
 		x: 20,
-		y: map.height - 30,
+		y: canvas.height - 30,
 		size: 10,
-		speed: 4,
+		speed: 10,
+		color: Color.blue,
 
 		draw: function(){
-			ctx.fillStyle = Color.blue;
-			ctx.strokeStyle = Color.blue;
+			ctx.fillStyle = this.color;
+			ctx.strokeStyle = this.color;
 			ctx.beginPath();
 			ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
 			ctx.fill();
@@ -59,12 +100,22 @@ var player = {
 	},
 
 	draw: function(){
-		ctx.fillStyle =  Color.blue;
-		ctx.strokeStyle = Color.blue;
+		ctx.fillStyle =  this.color;
+		ctx.strokeStyle = this.color;
 		ctx.beginPath();
 		ctx.arc(player.x, player.y, player.size, 0, 2*Math.PI);
 		ctx.fill();
 		ctx.stroke();
+	},
+
+	colorChange: function(){
+		var randomColor = random(0, 7);
+
+		if(blocks[randomColor].isDead){
+			this.colorChange();
+		}else{
+			this.color = this.ammo.color = blocks[randomColor].color;
+		}
 	},
 
 	moveLeft: function(){
@@ -86,7 +137,7 @@ var player = {
 	autoMove: function(){
 		this.x += this.speed;
 
-		if(player.x < map.x || player.x + player.size > map.width){
+		if(player.x - player.size < map.x || player.x + player.size > canvas.width){
 			this.speed = -this.speed;
 		}
 
@@ -106,7 +157,7 @@ var player = {
 	},
 
 	pointer: function(){
-		ctx.strokeStyle = Color.blue;
+		ctx.strokeStyle = this.color;
 		ctx.beginPath();
 		ctx.moveTo(this.x - 15, this.y);
 		ctx.lineTo(this.x, this.y - this.size - 20);
@@ -116,107 +167,13 @@ var player = {
 		ctx.stroke();
 	},
 
-	drawPoints: function(){
+	drawscore: function(){
 		ctx.fillStyle = "white";
-		ctx.font = "40px Trebuchet MS"
-		ctx.fillText("Points: " + this.points, 50, 50);
+		ctx.font = "20px Trebuchet MS"
+		ctx.fillText("Score: " + this.killed, 50, 50);
 	}
 }
-
-var food = {
-	x: random(5, map.width - 10),
-	y: random(5, player.y - 100),
-	size: 20,
-
-	draw: function(){
-		ctx.fillStyle = Color.green;
-		ctx.strokeStyle = Color.green;
-		ctx.beginPath();
-		ctx.arc(food.x, food.y, food.size, 0, 2*Math.PI);
-		ctx.fill();
-		ctx.stroke();
-	}
-}
-
-var Color = {
-	red: "#E74C3C",
-	green: "#2ECC71",
-	blue: "#3498DB",
-	purple: "#9B59B6",
-	pink: "#F0F"
-}
-
-var trap01 = {
-	x: random(20, map.width - 20),
-	y: random(20, player.y - 100),
-	speed: 1,
-	color: Color.red,
-	size: 20,
-
-	draw: function(){
-		ctx.fillStyle = this.color;
-		ctx.strokeStyle = this.color;
-		ctx.beginPath();
-		ctx.arc(this.x, this.y, this.size, 0, 2*Math.PI);
-		ctx.fill();
-		ctx.stroke();
-	},
-
-	bounce: function(){
-		this.x += this.speed;
-		if(this.x + this.size >= map.width || this.x < this.size){
-			this.speed = -this.speed;
-		}
-	}
-}
-
-var trap02 = {
-	x: random(20, map.width - 20),
-	y: random(20, player.y - 100),
-	speed: 1,
-	color: Color.purple,
-	size: 20,
-
-	draw: function(){
-		ctx.fillStyle = this.color;
-		ctx.strokeStyle = this.color;
-		ctx.beginPath();
-		ctx.arc(this.x, this.y, this.size, 0, 2*Math.PI);
-		ctx.fill();
-		ctx.stroke();
-	},
-
-	bounce: function(){
-		this.x += this.speed;
-		if(this.x + this.size >= map.width || this.x < this.size){
-			this.speed = -this.speed;
-		}
-	}
-}
-
-var trap03 = {
-	x: random(20, map.width - 20),
-	y: random(20, player.y - 100),
-	speed: 1,
-	color: Color.pink,
-	size: 20,
-
-	draw: function(){
-		ctx.fillStyle = this.color;
-		ctx.strokeStyle = this.color;
-		ctx.beginPath();
-		ctx.arc(this.x, this.y, this.size, 0, 2*Math.PI);
-		ctx.fill();
-		ctx.stroke();
-	},
-
-	bounce: function(){
-		this.x += this.speed;
-		if(this.x + this.size >= map.width || this.x < this.size){
-			this.speed = -this.speed;
-		}
-	}
-}
+player.colorChange();
 
 
 
@@ -248,22 +205,17 @@ window.onresize = canvasSetup;
 		FUNCTIONS
 ==============================
 */
-canvasSetup();
 phoneOptimize();
 
 function canvasSetup(){
-	canvas.width = window.innerWidth;
-	canvas.height = window.innerHeight;
+	canvas.width = window.innerWidth-6;
+	canvas.height = window.innerHeight-6;
 }
 
 function phoneOptimize(){
 	if(window.innerWidth < 1000){
 		player.size = 30;
-		player.ammo.size = 20;
-		food.size = 40;
-		trap01.size = 40;
-		trap02.size = 40;
-		trap03.size = 40;
+		playeer.ammo.size = 20;
 	}
 }
 
@@ -271,15 +223,57 @@ function random(min, max){
 	return Math.floor(Math.random()*(max-min+1)+min);
 }
 
-function getDist(a, b){
-	return Math.sqrt(Math.abs(a.x-b.x) * Math.abs(a.x-b.x) + Math.abs(a.y-b.y) * Math.abs(a.y-b.y));
+function Block(x, y, width, height, speed, color){
+	this.x = x;
+	this.y = y;
+	this.width = width;
+	this.height = height;
+	this.speed = speed;
+	
+	if(color == 0){
+		this.color = Color.red;
+	}else if(color == 1){
+		this.color = Color.green;
+	}else if(color == 2){
+		this.color = Color.blue;
+	}else if(color == 3){
+		this.color = Color.purple;
+	}else if(color == 4){
+		this.color = Color.pink;
+	}else if(color == 5){
+		this.color = Color.yellow;
+	}else if(color == 6){
+		this.color = Color.orange;
+	}else if(color == 7){
+		this.color = Color.wet;
+	}
+
+	this.isDead = false;
+
+	this.draw = function(){
+		ctx.fillStyle = this.color;
+		ctx.fillRect(this.x, this.y, this.width, this.height);	
+	};
+
+	this.move = function(){
+		this.x += this.speed;
+		if(this.x <= 0 || this.x + this.width >= canvas.width){
+			this.speed = -this.speed;
+		}
+	};
+
+	this.getShot = function(){
+		if(player.ammo.x >= this.x && player.ammo.x <= this.x + this.width && player.ammo.y - player.ammo.size <= this.y + this.height && player.ammo.y - player.ammo.size >= this.y){
+			return true;
+		}else{
+			return false;
+		}
+	}
 }
 
-function isHit(a, b){
-	if(getDist(a, b) <= a.size + b.size){
-		return true;
-	}else{
-		return false;
+function generateBlocks(){
+	for(var i = 0; i < 8; i++){
+		blocks[i] = new Block(random(0, canvas.width-canvas.width/3), random(0, canvas.height-200), random(50, canvas.width/3), random(10, 50), random(1, 6), i);
 	}
 }
 
@@ -293,40 +287,50 @@ function isHit(a, b){
 */
 setInterval(function(){
 	Game.clear();
-	food.draw();
-	trap01.draw();
-	trap01.bounce();
-	trap02.draw();
-	trap02.bounce();
-	trap03.draw();
-	trap03.bounce();
+	
 	player.ammo.draw();
 	player.pointer();
 	player.draw();
-	player.drawPoints();
+	player.drawscore();
 	player.shot();
-	player.autoMove();
+	//player.autoMove();
 
-	if(isHit(player.ammo, food)){
-		player.points++;
-		food.x = random(food.size, map.width - food.size);
-		food.y = random(food.size, player.y - 100);
-		player.ammo.reset();
+	if(player.score == 8){
+		Game.reset();
 	}
-
+	
 	// 'A' key pressed
 	if(key[A] && player.x > player.size){
 		player.moveLeft();
 	}
 
-
 	// 'D' key pressed
-	if(key[D] && player.x + player.size < map.width){
+	if(key[D] && player.x + player.size < canvas.width){
 		player.moveRight();
 	}
 
-	// 'Spacebar' pressed
+	// 'Spacebar' or 'W' pressed
 	if(key[SPACEBAR] || key[W]){
 		player.shotted = true;
+	}
+
+	for(var i = 0; i < blocks.length; i++){
+		if(blocks[i].getShot() && !blocks[i].isDead){
+			if(blocks[i].color == player.ammo.color){
+				blocks[i].isDead = true;
+				player.killed++;
+				player.score++;
+				player.ammo.reset();
+				player.colorChange();
+			}else{
+				Game.restart();
+			}
+			
+		}
+
+		if(!blocks[i].isDead){
+			blocks[i].draw();
+			blocks[i].move();
+		}
 	}
 }, 1000/Game.FPS);
