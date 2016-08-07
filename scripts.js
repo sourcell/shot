@@ -3,7 +3,7 @@
 		CANVAS SETUP
 ==============================
 */
-var canvas = document.getElementById("map");
+var map = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 canvasSetup();
 
@@ -23,23 +23,22 @@ var D = 68;
 
 var Game = {
 	FPS: 60,
-	keyPressed: false,
 
 	clear: function(){
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		ctx.clearRect(0, 0, map.width, map.height);
 	},
 
 	restart: function(){
 		generateBlocks();
+		player.counter = 0;
 		player.score = 0;
-		player.killed = 0;
 		player.ammo.reset();
 		player.colorChange();
 	},
 
 	reset: function(){
 		generateBlocks();
-		player.score = 0;
+		player.counter = 0;
 		player.ammo.reset();
 		player.colorChange();	
 	}
@@ -56,29 +55,24 @@ var Color = {
 	wet: "#34495E"
 }
 
-var map = {
-	x: 0,
-	y: 0,
-	width: window.innerWidth,
-	height: window.innerHeight
-}
-
 var blocks = [];
 generateBlocks();
 
 var player = {
 	x: 20,
-	y: canvas.height - 30,
+	y: map.height - 30,
 	size: 15,
 	speed: 5,
 	shotted: false,
-	killed: 0,
 	score: 0,
+	counter: 0,
+	highScore: 0,
 	color: Color.blue,
+	isDead: false,
 
 	ammo: {
 		x: 20,
-		y: canvas.height - 30,
+		y: map.height - 30,
 		size: 10,
 		speed: 10,
 		color: Color.blue,
@@ -137,7 +131,7 @@ var player = {
 	autoMove: function(){
 		this.x += this.speed;
 
-		if(player.x - player.size < map.x || player.x + player.size > canvas.width){
+		if(player.x - player.size < map.x || player.x + player.size > map.width){
 			this.speed = -this.speed;
 		}
 
@@ -167,13 +161,33 @@ var player = {
 		ctx.stroke();
 	},
 
-	drawscore: function(){
+	drawScore: function(){
 		ctx.fillStyle = "white";
 		ctx.font = "20px Trebuchet MS"
-		ctx.fillText("Score: " + this.killed, 50, 50);
+		ctx.fillText("Score: " + this.score, 50, 50);
+	},
+
+	drawHighScore: function(){
+		ctx.fillStyle = "white";
+		ctx.font = "20px Trebuchet MS"
+		ctx.fillText("High Score: " + this.highScore, map.width - 175, 50);
 	}
 }
 player.colorChange();
+
+var msgbox = {
+	x: map.width/2 - 200,
+	y: map.height/2,
+	width: 400,
+	height: 200,
+	color: "white",
+
+	draw: function(){
+		ctx.fillStyle = this.color;
+		ctx.font = "60px Trebuchet MS";
+		ctx.fillText("You have died!", this.x, this.y);
+	}
+}
 
 
 
@@ -183,17 +197,17 @@ player.colorChange();
 		EVENTS
 ==============================
 */
-window.addEventListener("keydown", function(e){
+window.onkeydown = function(e){
 	key[e.keyCode] = true;
-});
+}
 
-window.addEventListener("keyup", function(e){
+window.onkeyup = function(e){
 	delete key[e.keyCode];
-});
+}
 
-window.addEventListener("mousedown", function(){
-	player.shotted = true;
-});
+window.onmousedown = function(e){
+	player.isDead = false;
+}
 
 window.onresize = canvasSetup;
 
@@ -208,8 +222,8 @@ window.onresize = canvasSetup;
 phoneOptimize();
 
 function canvasSetup(){
-	canvas.width = window.innerWidth-6;
-	canvas.height = window.innerHeight-6;
+	map.width = window.innerWidth-6;
+	map.height = window.innerHeight-6;
 }
 
 function phoneOptimize(){
@@ -251,13 +265,18 @@ function Block(x, y, width, height, speed, color){
 	this.isDead = false;
 
 	this.draw = function(){
+		if(player.isDead){return;}
+
 		ctx.fillStyle = this.color;
 		ctx.fillRect(this.x, this.y, this.width, this.height);	
 	};
 
 	this.move = function(){
+		if(player.isDead){return;}
+
 		this.x += this.speed;
-		if(this.x <= 0 || this.x + this.width >= canvas.width){
+
+		if(this.x <= 0 || this.x + this.width >= map.width){
 			this.speed = -this.speed;
 		}
 	};
@@ -273,7 +292,7 @@ function Block(x, y, width, height, speed, color){
 
 function generateBlocks(){
 	for(var i = 0; i < 8; i++){
-		blocks[i] = new Block(random(0, canvas.width-canvas.width/3), random(0, canvas.height-200), random(50, canvas.width/3), random(10, 50), random(1, 6), random(0, 3));
+		blocks[i] = new Block(random(0, map.width-map.width/3), random(0, map.height-200), random(50, map.width/3), random(10, 50), random(1, 6), random(0, 3));
 	}
 }
 
@@ -291,11 +310,10 @@ setInterval(function(){
 	player.ammo.draw();
 	player.pointer();
 	player.draw();
-	player.drawscore();
 	player.shot();
 	//player.autoMove();
 
-	if(player.score == 8){
+	if(player.counter == 8){
 		Game.reset();
 	}
 	
@@ -305,12 +323,12 @@ setInterval(function(){
 	}
 
 	// 'D' key pressed
-	if(key[D] && player.x + player.size < canvas.width){
+	if(key[D] && player.x + player.size < map.width){
 		player.moveRight();
 	}
 
 	// 'Spacebar' or 'W' pressed
-	if(key[SPACEBAR] || key[W]){
+	if(key[SPACEBAR] && !player.isDead || key[W] && !player.isDead){
 		player.shotted = true;
 	}
 
@@ -318,19 +336,31 @@ setInterval(function(){
 		if(blocks[i].getShot() && !blocks[i].isDead){
 			if(blocks[i].color == player.ammo.color){
 				blocks[i].isDead = true;
-				player.killed++;
+				player.counter++;
 				player.score++;
 				player.ammo.reset();
 				player.colorChange();
 			}else{
-				Game.restart();
+				if(player.score > player.highScore){
+					player.highScore = player.score;
+				}
+
+				player.isDead = true;
+
+				Game.restart();			
 			}
-			
 		}
 
 		if(!blocks[i].isDead){
 			blocks[i].draw();
 			blocks[i].move();
 		}
+	}
+
+	player.drawScore();
+	player.drawHighScore();
+
+	if(player.isDead){
+		msgbox.draw();
 	}
 }, 1000/Game.FPS);
