@@ -215,7 +215,7 @@ function canvasSetup(){
 function phoneOptimize(){
 	if(window.innerWidth < 1000){
 		player.size = 30;
-		playeer.ammo.size = 20;
+		player.ammo.size = 20;
 	}
 }
 
@@ -231,17 +231,17 @@ function Block(x, y, width, height, speed, color){
 	this.speed = speed;
 	
 	if(color == 0){
-		this.color = Color.red;
-	}else if(color == 1){
-		this.color = Color.green;
-	}else if(color == 2){
 		this.color = Color.blue;
-	}else if(color == 3){
-		this.color = Color.purple;
-	}else if(color == 4){
+	}else if(color == 1){
 		this.color = Color.pink;
-	}else if(color == 5){
+	}else if(color == 2){
+		this.color = Color.purple;
+	}else if(color == 3){
 		this.color = Color.yellow;
+	}else if(color == 4){
+		this.color = Color.green;
+	}else if(color == 5){
+		this.color = Color.red;
 	}else if(color == 6){
 		this.color = Color.orange;
 	}else if(color == 7){
@@ -273,7 +273,7 @@ function Block(x, y, width, height, speed, color){
 
 function generateBlocks(){
 	for(var i = 0; i < 8; i++){
-		blocks[i] = new Block(random(0, canvas.width-canvas.width/3), random(0, canvas.height-200), random(50, canvas.width/3), random(10, 50), random(1, 6), i);
+		blocks[i] = new Block(random(0, canvas.width-canvas.width/3), random(0, canvas.height-200), random(50, canvas.width/3), random(10, 50), random(1, 6), random(0, 3));
 	}
 }
 
